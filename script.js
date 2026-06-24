@@ -45,6 +45,38 @@ function saveLocalMeasurements(data) {
     localStorage.setItem('measurements', JSON.stringify(data));
 }
 
+const originalFetch = window.fetch.bind(window);
+
+window.fetch = async function (input, init) {
+    const url = typeof input === 'string' ? input : input?.url || '';
+
+    if (url.includes('/api/measurements')) {
+        const method = (init?.method || 'GET').toUpperCase();
+
+        if (method === 'POST') {
+            const body = init?.body ? JSON.parse(init.body) : null;
+            const existing = getLocalMeasurements();
+
+            if (body) {
+                existing.push(body);
+                saveLocalMeasurements(existing);
+            }
+
+            return new Response(JSON.stringify({ success: true, measurements: existing }), {
+                status: 200,
+                headers: { 'Content-Type': 'application/json' }
+            });
+        }
+
+        return new Response(JSON.stringify(getLocalMeasurements()), {
+            status: 200,
+            headers: { 'Content-Type': 'application/json' }
+        });
+    }
+
+    return originalFetch(input, init);
+};
+
 async function getMeasurements() {
     if (!canUseApi()) {
         return getLocalMeasurements();
