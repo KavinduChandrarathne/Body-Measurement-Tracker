@@ -28,6 +28,11 @@ window.onclick = (e) => {
 // Storage functions
 const API_BASE_URL = window.location.protocol === 'file:' ? 'http://localhost:3000' : '';
 
+function canUseApi() {
+    const host = window.location.hostname;
+    return window.location.protocol === 'file:' || host === 'localhost' || host === '127.0.0.1';
+}
+
 function getLocalMeasurements() {
     try {
         return JSON.parse(localStorage.getItem('measurements')) || [];
@@ -41,6 +46,10 @@ function saveLocalMeasurements(data) {
 }
 
 async function getMeasurements() {
+    if (!canUseApi()) {
+        return getLocalMeasurements();
+    }
+
     try {
         const response = await fetch(`${API_BASE_URL}/api/measurements`);
         if (!response.ok) {
@@ -53,6 +62,13 @@ async function getMeasurements() {
 }
 
 async function saveMeasurements(data) {
+    if (!canUseApi()) {
+        const existing = getLocalMeasurements();
+        existing.push(data);
+        saveLocalMeasurements(existing);
+        return existing;
+    }
+
     try {
         const response = await fetch(`${API_BASE_URL}/api/measurements`, {
             method: 'POST',
