@@ -29,8 +29,8 @@ window.onclick = (e) => {
 const API_BASE_URL = window.location.protocol === 'file:' ? 'http://localhost:3000' : '';
 
 function canUseApi() {
-    const host = window.location.hostname;
-    return window.location.protocol === 'file:' || host === 'localhost' || host === '127.0.0.1';
+    const host = window.location.hostname.toLowerCase();
+    return window.location.protocol === 'file:' || host === 'localhost' || host === '127.0.0.1' || host === '0.0.0.0' || host.endsWith('.local');
 }
 
 function getLocalMeasurements() {
